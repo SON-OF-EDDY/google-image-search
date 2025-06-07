@@ -1,13 +1,37 @@
 from dotenv import load_dotenv
 import os
 import requests
+import telebot
 
 load_dotenv()
 
+TELEGRAM_API_KEY = os.getenv("TELEGRAM_API_KEY")
+CHAT_ID = os.getenv("CHAT_ID")
 GOOGLE_KEY = os.getenv("GOOGLE_KEY")
 SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")
 
+bot = telebot.TeleBot(TELEGRAM_API_KEY)
 url = "https://www.googleapis.com/customsearch/v1"
+
+def send_image_to_bot(image_path):
+    try:
+        with open(image_path, 'rb') as photo:
+            bot.send_photo(chat_id=CHAT_ID, photo=photo)
+            print(f"Image sent to bot: {image_path}")
+    except Exception as e:
+        print(f"Failed to send image to bot: {e}")
+
+def send_all_images_in_folder():
+    folder_path = os.path.join(os.getcwd(), 'images')
+    if not os.path.exists(folder_path):
+        print("Images folder does not exist.")
+        return
+
+    for file_name in sorted(os.listdir(folder_path)):
+        if file_name.lower().endswith(".jpg"):
+            image_path = os.path.join(folder_path, file_name)
+            send_image_to_bot(image_path)
+
 
 def delete_contents_of_image_folder():
     try:
@@ -75,3 +99,5 @@ counter = 0
 for word in list_of_needed_words:
     get_image(word, counter)
     counter += 1
+
+send_all_images_in_folder()
